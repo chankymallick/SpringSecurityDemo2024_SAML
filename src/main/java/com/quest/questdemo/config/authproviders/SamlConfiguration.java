@@ -26,22 +26,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class SamlConfiguration {
 
+    private final String IDP_METADATA_LOCATION = "https://dev-26207677.okta.com/app/exklk9bswqBhNMlcH5d7/sso/saml/metadata";
+    private final String REGISTRATION_ID = "okta";
+    private final String ENTITY_URI = "http://localhost:8080/questdemo/saml2/service-provider-metadata/okta";
+    private final String ASSERTION_SIGNON_URL = "http://localhost:8080/questdemo/login/saml2/sso/okta";
+
     @Value("classpath:credentials/rp-private.key")
     RSAPrivateKey privateKey;
 
     @Bean
     RelyingPartyRegistrationRepository relyingPartyRegistrationRepository() {
         RelyingPartyRegistration relyingPartyRegistration = RelyingPartyRegistrations
-                .fromMetadataLocation("https://dev-26207677.okta.com/app/exklk9bswqBhNMlcH5d7/sso/saml/metadata")
-                .registrationId("okta")
-                .entityId("http://localhost:8080/questdemo/saml2/service-provider-metadata/okta")
+                .fromMetadataLocation(IDP_METADATA_LOCATION)
+                .registrationId(REGISTRATION_ID)
+                .entityId(ENTITY_URI)
                 .decryptionX509Credentials(
                         (c) -> c.add(Saml2X509Credential.decryption(this.privateKey, relyingPartyCertificate())))
                 .signingX509Credentials(
                         (c) -> c.add(Saml2X509Credential.signing(this.privateKey, relyingPartyCertificate())))
-                .singleLogoutServiceLocation("https://dev-26207677.okta.com")
-                .assertionConsumerServiceLocation("http://localhost:8080/questdemo/login/saml2/sso/okta")
-                .singleLogoutServiceResponseLocation("http://localhost:8080/logout/saml2/slo")
+                .assertionConsumerServiceLocation(ASSERTION_SIGNON_URL)
                 .singleLogoutServiceBinding(Saml2MessageBinding.POST).build();
 
         return new InMemoryRelyingPartyRegistrationRepository(relyingPartyRegistration);
